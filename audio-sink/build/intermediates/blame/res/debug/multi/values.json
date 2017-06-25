@@ -1,0 +1,26 @@
+[
+    {
+        "outputFile": "E:\\CaiPro\\github\\AndroidThings\\googleSample\\sample-bluetooth-audio\\audio-sink\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+        "map": [
+            {
+                "to": {
+                    "startLine": 2,
+                    "startColumn": 4,
+                    "startOffset": 55,
+                    "endColumn": 71,
+                    "endOffset": 122
+                },
+                "from": {
+                    "file": "E:\\CaiPro\\github\\AndroidThings\\googleSample\\sample-bluetooth-audio\\audio-sink\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 17,
+                        "startColumn": 4,
+                        "startOffset": 680,
+                        "endColumn": 71,
+                        "endOffset": 747
+                    }
+                }
+            }
+        ]
+    }
+]
