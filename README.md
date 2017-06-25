@@ -1,2 +1,0 @@
-# AndroidThingsFromGoogle
-Demo在GoogleAndroidThings的基础上更改
