@@ -69,5 +69,130 @@ last destroy
         }
 
 	
+	
+	
+===================================================================================
+通过外设设备驱动实现外设和板子的交互（驱动framework）
+初始化驱动lib包
+
+    1搜索驱动包索引找到匹配外设的驱动lib
+    2添加上面的lib声明到app的build.gradle文件中
+	 compile 'com.google.android.things.contrib:driver-button:0.3'
+
+    3使用适当的外设IO来初始化驱动类
+	    --p1：pin脚name;p2:低压;p3:映射的按键码
+	mButtonInputDriver = new ButtonInputDriver(
+                    BUTTON_PIN_NAME,
+                    Button.LogicState.PRESSED_WHEN_LOW,
+                    KeyEvent.KEYCODE_SPACE);
+
+	
+    4当app不在需要外设时，关闭创建的连接
+     mButtonInputDriver.close();
+
+
+    5生命周期
+ @Override
+    protected void onStart() {
+        super.onStart();
+        mButtonInputDriver.register();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mButtonInputDriver.unregister();
+    }
+	
+	6监听事件
+	 @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_SPACE) {
+            // Handle button pressed event
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_SPACE) {
+            // Handle button released event
+            return true;
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
+=================================================================
+处理按钮开关的事件（输入事件的处理）(GPIO)
+
+当连接到GPIO端口按钮被按下时为了接收到事件需要做：
+
+    1使用PeripheralManagerService打开一个接有按钮开关的GPIO端口的连接
+	 PeripheralManagerService service = new PeripheralManagerService();
+	  mButtonGpio = service.openGpio(BUTTON_PIN_NAME);
+
+    2配置端口的类型为DIRECTION_IN
+	  mButtonGpio.setDirection(Gpio.DIRECTION_IN);
+
+    3使用api（setEdgeTriggerType()）来配置回调事件的状态转变类型
+	   mButtonGpio.setEdgeTriggerType(Gpio.EDGE_FALLING);
+
+    4注册一个GPIO回调来接受事件
+	  mButtonGpio.registerGpioCallback(mCallback);
+
+    5如果继续接受未来的事件在api（onGpioEdge（））中返回true
+	 private GpioCallback mCallback = new GpioCallback() {
+        @Override
+        public boolean onGpioEdge(Gpio gpio) {
+            Log.i(TAG, "GPIO changed, button pressed");
+
+            // Step 5. Return true to keep callback active.
+            return true;
+        }
+    };
+
+    6当app不在需要GPIO连接的时候，关闭GPIO连接，节省资源和提升性能
+	 @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Step 6. Close the resource
+        if (mButtonGpio != null) {
+            mButtonGpio.unregisterGpioCallback(mCallback);
+            try {
+                mButtonGpio.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error on PeripheralIO API", e);
+            }
+        }
+    }
+======================================================================
+开关LED灯	（输出事件的处理）(GPIO)
+	
+  1  使用PheralManagerService打开一个连接上led灯的GPIO连接
+  PeripheralManagerService service = new PeripheralManagerService();
+
+  2  配置端口类型为：DIRECTION_OUT_INITIALLY_LOW
+       mLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+
+  3  通过两个api（setValue()和getValue()）开关控制led灯的状态
+     mLedGpio.setValue(!mLedGpio.getValue());
+
+  4  短暂的延迟后，使用handler去处理开关GPIO端口的事件
+  
+  5  当app不再需要GPIO连接的时候，关闭GPIO连接进而节省资源，即：
+    if (mLedGpio != null) {
+            try {
+                mLedGpio.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error on PeripheralIO API", e);
+            }
+        }
+
+
+	 
 		 
    
