@@ -21,9 +21,12 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
         android:icon="@android:drawable/sym_def_app_icon"
+        android:name="com.example.androidthings.bluetooth.audio.app.KLogApplication"
         android:label="@string/app_name">
 
         <uses-library android:name="com.google.android.things"/>
